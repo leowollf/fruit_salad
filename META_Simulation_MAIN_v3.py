@@ -27,13 +27,9 @@ def main():
     storage = create_empty_storage()
     
     # defining Excel file for reading
-    infeeds = infeed_source(
-        "C:/Users/gatmichar/Documents/eiddpython/eidppython24w-code/lecture_01/Infeed_Test.xlsx"
-    )
+    infeeds = infeed_source("Infeed_Test.xlsx")
     # defining Excel file for orders
-    orders = read_orders(
-    "C:/Users/gatmichar/Documents/eiddpython/eidppython24w-code/lecture_01/Outfeed_Test.xlsx"
-    )
+    orders = read_orders("Outfeed_Test.xlsx")
     
 
 
