@@ -32,10 +32,10 @@ def read_orders(file_path="Outfeed-Excel"):
             continue
 
         order = Order(
-            ID=row.get("OUT_ID", None),
+            OUT_ID=row.get("OUT_ID", None),
             article_code=row["article_code"],
             article_description=row.get("article_description", ""),
-            shop=row["shop_destination"],
+            shop_destination=row["shop_destination"],
             quantity=row["OUT_quantity"]
         )
         order_list.append(order)
