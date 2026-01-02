@@ -202,6 +202,8 @@ def try_outfeed(storage, orders):
                         crate_type,
                         qty_to_try
                     )
+                    #support for first elif-statment; counts how many tuples are in list "picks"
+                    help_remove_idx = len(picks) -1
 
                     if can_add and max_qty > 0:
                         # Add to current stack
@@ -215,6 +217,17 @@ def try_outfeed(storage, orders):
                         if current_height >= MIN_STACK_HEIGHT_MM: # MIN height reached ...
                             current_stack_idx += 1
                             continue # ... and move on to next stack
+                    elif (
+                        not can_add
+                        and get_crate_family(crate_type) != get_stack_family(stacks[current_stack_idx])
+                        and calculate_stack_height(stacks[current_stack_idx]) < MIN_STACK_HEIGHT_MM
+                        ):
+                        #1 remove crates from unfinished stack (because crate family is not matching)
+                        stacks[current_stack_idx].clear()
+                        del picks[(help_remove_idx):]
+
+                        # re-evaluate current crates in next iteration
+                        continue
                     else:
                         # Can't add to current stack, move to next
                         current_stack_idx += 1
