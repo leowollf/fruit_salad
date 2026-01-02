@@ -4,6 +4,7 @@ Defines crate types, heights, and stack constraints.
 
 KEY RULE: Stacks can contain mixed crate types, but ALL must be from the same family.
 """
+import sys
 
 # ============================================================================
 # CRATE TYPE DEFINITIONS
