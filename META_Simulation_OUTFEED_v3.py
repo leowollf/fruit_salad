@@ -139,9 +139,9 @@ def is_valid_stack(stack_contents):
     
     return (True, "Valid stack")
 
-# ===================================
+# ====================================================================================================================================
 # CORE OUTFEED FUNCTION
-# ===================================
+# ====================================================================================================================================
 
 def try_outfeed(storage, orders):
     """
@@ -182,16 +182,18 @@ def try_outfeed(storage, orders):
             
             if not available_crates:
                 continue  # No crates available for this article
-            
+
             # Try to pick from available crate types
             qty_still_needed = order.remaining_quantity
-            
-            for crate_type, available_qty in available_crates:
-                if qty_still_needed <= 0:
-                    break
-                
+
+            # Work on a COPY so we can mutate safely
+            available_crates_working = available_crates.copy()
+
+            while available_crates_working and qty_still_needed > 0:
+                crate_type, available_qty = available_crates_working.pop(0)
+
                 qty_to_try = min(qty_still_needed, available_qty)
-                
+
                 # Try to add to current stack (or subsequent stacks)
                 while qty_to_try > 0 and current_stack_idx < STACKS_PER_PALLET:
                     # Check if we can add to current stack
@@ -200,28 +202,28 @@ def try_outfeed(storage, orders):
                         crate_type,
                         qty_to_try
                     )
-                    
+
                     if can_add and max_qty > 0:
                         # Add to current stack
                         stacks[current_stack_idx].append((crate_type, max_qty))
                         picks.append((order, order.article_code, crate_type, max_qty))
                         qty_to_try -= max_qty
                         qty_still_needed -= max_qty
-                        
+
                         # Check if stack reached minimum height to move to next
                         current_height = calculate_stack_height(stacks[current_stack_idx])
-                        if current_height >= 1500:  # Min height reached
+                        if current_height >= MIN_STACK_HEIGHT_MM: # MIN height reached ...
                             current_stack_idx += 1
-                            break  # Move to next stack
+                            continue # ... and move on to next stack
                     else:
                         # Can't add to current stack, move to next
                         current_stack_idx += 1
-                
-                # Stop if all 4 stacks are filled
+                    
+                # Stop if all stacks are filled
                 if current_stack_idx >= STACKS_PER_PALLET:
                     break
-            
-            # Stop filling if all 4 stacks used
+
+            # Stop filling if all stacks used
             if current_stack_idx >= STACKS_PER_PALLET:
                 break
         
@@ -229,8 +231,14 @@ def try_outfeed(storage, orders):
         # Count non-empty stacks
         non_empty_stacks = [i for i, stack in enumerate(stacks) if len(stack) > 0]
         
-        if len(non_empty_stacks) == 0:
-            continue  # No stacks built, try next shop
+        # Checks that n° of stacks equals STACKS_PER_PALLET; if less, next shop is evaluated
+        if len(non_empty_stacks) < STACKS_PER_PALLET:
+            print(
+            f"✗ Rejected pallet for shop {shop} "
+            f"- only {len(non_empty_stacks)}/{STACKS_PER_PALLET} stacks built"
+            )
+            continue
+
         
         # Check if ALL non-empty stacks are valid (1500-1750mm)
         all_stacks_valid = True
