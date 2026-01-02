@@ -132,10 +132,10 @@ def is_valid_stack(stack_contents):
     total_height = calculate_stack_height(stack_contents)
     
     if total_height < MIN_STACK_HEIGHT_MM:
-        return (False, f"Stack too short: {total_height}mm < {MIN_STACK_HEIGHT_MM}mm minimum")
+        return (False, f"Stack too short: {int(total_height)}mm < {MIN_STACK_HEIGHT_MM}mm minimum")
     
     if total_height > MAX_STACK_HEIGHT_MM:
-        return (False, f"Stack too tall: {total_height}mm > {MAX_STACK_HEIGHT_MM}mm maximum")
+        return (False, f"Stack too tall: {int(total_height)}mm > {MAX_STACK_HEIGHT_MM}mm maximum")
     
     return (True, "Valid stack")
 
@@ -256,7 +256,7 @@ def try_outfeed(storage, orders):
             print(f"✗ Rejected pallet for shop {shop} - invalid stacks:")
             for stack_idx, reason in invalid_stacks:
                 height = calculate_stack_height(stacks[stack_idx])
-                print(f"  Stack {stack_idx+1}: {height}mm - {reason}")
+                print(f"  Stack {stack_idx+1}: {int(height)}mm - {reason}")
             continue  # Try next shop
         
         # All stacks valid! Execute the outfeed
@@ -270,15 +270,15 @@ def try_outfeed(storage, orders):
         
         # Print pallet info
         total_crates = sum(qty for _, _, _, qty in picks)
-        print(f"✓ Created outfeed pallet for shop {shop}: {total_crates} crates in {len(non_empty_stacks)} stacks")
+        print(f"\n✓ Created outfeed pallet for shop {shop}: {int(total_crates)} crates in {len(non_empty_stacks)} stacks")
         
         for i, stack in enumerate(stacks):
             if len(stack) > 0:
                 height = calculate_stack_height(stack)
                 family = get_crate_family(stack[0][0])
-                print(f"  Stack {i+1}: {height}mm ({family})")
+                print(f"  Stack {i+1}: {int(height)}mm ({family})")
                 for crate_type, qty in stack:
-                    print(f"    - {qty}x {crate_type}")
+                    print(f"    - {int(qty):>2}x {crate_type} - {article_code}")
         
         return True
     
