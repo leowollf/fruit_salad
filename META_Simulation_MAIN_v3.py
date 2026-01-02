@@ -27,7 +27,7 @@ def main():
     storage = create_empty_storage()
     
     # defining Excel file for reading
-    infeeds = infeed_source("Infeed_Test.xlsx")
+    infeeds = infeed_source("Infeed_Test-michar.xlsx")
     # defining Excel file for orders
     orders = read_orders("Outfeed_Test.xlsx")
     

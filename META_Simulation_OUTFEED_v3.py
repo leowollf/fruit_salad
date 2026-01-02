@@ -1,12 +1,11 @@
 
 import pandas as pd
 from META_Simulation_CONFIG_v1 import (
-    validate_crate_type,
-    can_add_crate_to_stack,
-    is_valid_stack,
-    calculate_stack_height,
+    STACKS_PER_PALLET,
+    MAX_STACK_HEIGHT_MM,
+    MIN_STACK_HEIGHT_MM,
     get_crate_family,
-    STACKS_PER_PALLET
+    get_crate_height
 )
 
 class Order:
@@ -41,6 +40,108 @@ def read_orders(file_path="Outfeed-Excel"):
         order_list.append(order)
     return order_list
 
+
+# ============================================================================
+# STACK-SPECIFIC FUNCTIONS
+# ============================================================================
+
+"""
+sums up total stack height
+"""
+def calculate_stack_height(stack_contents):
+    total_height = 0
+    for crate_type, quantity in stack_contents:
+        crate_height = get_crate_height(crate_type)
+        total_height += crate_height * quantity
+    return total_height
+
+"""
+validates that all crate types are from the same family
+"""
+def validate_stack_family_compatibility(stack_contents):
+    if not stack_contents:
+        return True  # Empty stack is valid
+    
+    # Get family of first crate type
+    first_crate_type = stack_contents[0][0]
+    required_family = get_crate_family(first_crate_type)
+    
+    # Check all other crate types
+    for crate_type, _ in stack_contents:
+        if get_crate_family(crate_type) != required_family:
+            return False
+    
+    return True
+
+"""
+define stack family. if any crate type in the stack is not of the correct family, function raises error
+"""
+def get_stack_family(stack_contents):
+    if not stack_contents:
+        return None
+    
+    if not validate_stack_family_compatibility(stack_contents):
+        raise ValueError("Stack contains mixed crate families - invalid state!")
+    
+    first_crate_type = stack_contents[0][0]
+    return get_crate_family(first_crate_type)
+
+"""
+checks if crate can be added to a stack
+"""
+def can_add_crate_to_stack(stack_contents, crate_type_to_add, quantity_to_add):
+    
+    # Check family compatibility
+    if stack_contents:
+        stack_family = get_stack_family(stack_contents)
+        new_crate_family = get_crate_family(crate_type_to_add)
+        
+        if stack_family != new_crate_family:
+            return (False, f"Crate family mismatch: stack is {stack_family}, trying to add {new_crate_family}", 0)
+    
+    # Check height constraint
+    current_height = calculate_stack_height(stack_contents)
+    remaining_height = MAX_STACK_HEIGHT_MM - current_height
+    
+    if remaining_height <= 0:
+        return (False, "Stack already at maximum height", 0)
+    
+    # Calculate how many crates fit
+    crate_height = get_crate_height(crate_type_to_add)
+    max_crates_that_fit = remaining_height // crate_height
+    
+    if max_crates_that_fit == 0:
+        return (False, f"Insufficient height: need {crate_height}mm, only {remaining_height}mm available", 0)
+    
+    actual_quantity = min(quantity_to_add, max_crates_that_fit)
+    return (True, "OK", actual_quantity)
+
+
+"""
+validates the correctness of a stack (all crates from same family, height within min-/max-limits)
+"""
+def is_valid_stack(stack_contents):
+    if not stack_contents:
+        return (False, "Stack is empty")
+    
+    # Check family compatibility
+    if not validate_stack_family_compatibility(stack_contents):
+        return (False, "Stack contains mixed crate families")
+    
+    # Check height constraints
+    total_height = calculate_stack_height(stack_contents)
+    
+    if total_height < MIN_STACK_HEIGHT_MM:
+        return (False, f"Stack too short: {total_height}mm < {MIN_STACK_HEIGHT_MM}mm minimum")
+    
+    if total_height > MAX_STACK_HEIGHT_MM:
+        return (False, f"Stack too tall: {total_height}mm > {MAX_STACK_HEIGHT_MM}mm maximum")
+    
+    return (True, "Valid stack")
+
+# ===================================
+# CORE OUTFEED FUNCTION
+# ===================================
 
 def try_outfeed(storage, orders):
     """
