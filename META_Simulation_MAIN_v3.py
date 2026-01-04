@@ -70,7 +70,7 @@ def main():
         print("Detailed storage status:")
         for article_code, crate_types in kpi_storage_detail(storage).items():
             for crate_type, quantity in crate_types.items():
-                print(f"  {article_code} - {crate_type} - {article_code}: {quantity} crates")
+                print(f"  {article_code} - {crate_type:>8} - {article_code}: {quantity:>3} crates")
 
         iteration += 1
 

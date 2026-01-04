@@ -50,7 +50,7 @@ sums up total stack height
 """
 def calculate_stack_height(stack_contents):
     total_height = 0
-    for crate_type, quantity in stack_contents:
+    for _, crate_type, quantity in stack_contents:
         crate_height = get_crate_height(crate_type)
         total_height += crate_height * quantity
     return total_height
@@ -63,11 +63,11 @@ def validate_stack_family_compatibility(stack_contents):
         return True  # Empty stack is valid
     
     # Get family of first crate type
-    first_crate_type = stack_contents[0][0]
+    first_crate_type = stack_contents[0][1]
     required_family = get_crate_family(first_crate_type)
     
     # Check all other crate types
-    for crate_type, _ in stack_contents:
+    for _, crate_type, _ in stack_contents:
         if get_crate_family(crate_type) != required_family:
             return False
     
@@ -83,7 +83,7 @@ def get_stack_family(stack_contents):
     if not validate_stack_family_compatibility(stack_contents):
         raise ValueError("Stack contains mixed crate families - invalid state!")
     
-    first_crate_type = stack_contents[0][0]
+    first_crate_type = stack_contents[0][1]
     return get_crate_family(first_crate_type)
 
 """
@@ -207,12 +207,12 @@ def try_outfeed(storage, orders):
 
                     if can_add and max_qty > 0:
                         # Add to current stack
-                        stacks[current_stack_idx].append((crate_type, max_qty))
+                        stacks[current_stack_idx].append((order.article_code, crate_type, max_qty))
                         picks.append((order, order.article_code, crate_type, max_qty))
                         qty_to_try -= max_qty
                         qty_still_needed -= max_qty
 
-                        # Check if stack reached minimum height to move to next
+                        # Check if stack reached minimum height to move to next stack
                         current_height = calculate_stack_height(stacks[current_stack_idx])
                         if current_height >= MIN_STACK_HEIGHT_MM: # MIN height reached ...
                             current_stack_idx += 1
@@ -288,11 +288,21 @@ def try_outfeed(storage, orders):
         for i, stack in enumerate(stacks):
             if len(stack) > 0:
                 height = calculate_stack_height(stack)
-                family = get_crate_family(stack[0][0])
+                family = get_crate_family(stack[0][1])
                 print(f"  Stack {i+1}: {int(height)}mm ({family})")
-                for crate_type, qty in stack:
+                for article_code, crate_type, qty in stack:
                     print(f"    - {int(qty):>2}x {crate_type} - {article_code}")
         
         return True
     
     return False  # No pallet could be created
+
+## NOTES
+#1 should shops be sequenced in function "try_outfeed"; currently randomly ordered
+#2 should orderlines be sequenced in function "try_outfeed"; currently randomly ordered
+#3 once an orderline is fulfilled and stack >=1500mm, stack is completed -> should be changed? can be removed or changed
+#3...: it must be considered that there is a (small) tendency that a pallet is not produced even though enough crates would be available
+#3...: can happen that stack 1-3 very high, but 4 not enough crates (but, also now this can happen)
+#4 should we include the slide-in in stack height calculation?
+#5 orders with qty "NULL" are skipped because no quantity. should this be the case or should there be an error?
+#6 must have: sort storage by crate family; optional: sort crate family by crate height (see sceanrio 3 of test cases)
