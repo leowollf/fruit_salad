@@ -31,11 +31,9 @@ def kpi_storage_detail(storage):
 def kpi_total_crates(storage):
     return sum(storage.values())
 
-
-
-"""
-Storage Logging 
-"""
+# ======================================================================================
+# STORAGE LOGGING
+# ======================================================================================
 
 from pathlib import Path
 from datetime import datetime
@@ -62,7 +60,7 @@ def kpi_family_counts(storage):
 
 
 class IterationExcelLogger:
-    def __init__(self, filepath="storage_iteration_log.xlsx", sheet_name="log"):
+    def __init__(self, filepath="Storage_Log.xlsx", sheet_name="log"):
         self.filepath = Path(filepath)
         self.sheet_name = sheet_name
         self._ensure_file()

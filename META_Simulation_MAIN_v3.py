@@ -29,7 +29,7 @@ def main():
     storage = create_empty_storage()
 
     # Excel iteration logger (created once)
-    excel_logger = IterationExcelLogger(filepath="storage_iteration_log.xlsx")
+    excel_logger = IterationExcelLogger(filepath="Storage_Log.xlsx")
     total_number_of_creates = 0  # cumulative across the whole simulation
 
     # defining Excel file for reading
@@ -74,20 +74,20 @@ def main():
 #            f"Ordered: {order.original_quantity}, Remaining: {order.remaining_quantity}")
 #        print("=== End of orders check ===\n")
 
-        # 3 Log infeed activity (always one row per iteration)
+        # 3) Log infeed activity (always one row per iteration)
         log_infeed_iteration(
             iteration=iteration,
             infeed_obj=current_infeed
         )
 
-        # 4 Log current storage state
+        # 4) Log current storage state
         print("\nTotal crates in storage:", kpi_total_crates(storage))
         print("Detailed storage status:")
         for article_code, crate_types in kpi_storage_detail(storage).items():
             for crate_type, quantity in crate_types.items():
                 print(f"  {article_code} - {crate_type:>8} - {article_code}: {quantity:>3} crates")
 
-        # 4) Excel logging at end of iteration
+        # 4.1) Excel log for storage
         ifco_in_storage, customer_in_storage = kpi_family_counts(storage)
         excel_logger.append_row(
             iteration=iteration,
@@ -96,7 +96,7 @@ def main():
             customer_crates=customer_in_storage
         )
 
-        # 5 Stop Condition: Rule = stop if no infeed left AND no outfeed possible
+        # 6) Stop Condition: Rule = stop if no infeed left AND no outfeed possible
         if infeed_index >= total_infeeds and not success:
             print("\nSimulation finished: no more infeed and no outfeed possible")
             break
