@@ -27,7 +27,7 @@ def main():
     storage = create_empty_storage()
     
     # defining Excel file for reading
-    infeeds = infeed_source("Infeed_Test.xlsx")
+    infeeds = infeed_source("Infeed_Test-michar.xlsx")
     # defining Excel file for orders
     orders = read_orders("Outfeed_Test.xlsx")
     
@@ -45,7 +45,7 @@ def main():
         if infeed_index < total_infeeds:
             current_infeed = infeeds[infeed_index]
             add_crates_to_storage(storage, current_infeed)
-            print(f"Infeed executed (pallet {infeed_index + 1})")
+            print(f"Infeed executed (pallet {infeed_index + 1})\t- {current_infeed.article_code}")
             infeed_index += 1
         else:
             print("No infeed left for this iteration")
@@ -66,11 +66,11 @@ def main():
 
 
         # 3️ Log current storage state
-        print("Total crates in storage:", kpi_total_crates(storage))
+        print("\nTotal crates in storage:", kpi_total_crates(storage))
         print("Detailed storage status:")
         for article_code, crate_types in kpi_storage_detail(storage).items():
             for crate_type, quantity in crate_types.items():
-                print(f"  {article_code} - {crate_type}: {quantity} crates")
+                print(f"  {article_code} - {crate_type:>8} - {article_code}: {quantity:>3} crates")
 
         iteration += 1
 

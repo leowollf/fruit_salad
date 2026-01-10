@@ -1,4 +1,9 @@
-class Infeed:
+import pandas as pd
+from META_Simulation_CONFIG_v1 import (
+    validate_crate_type,
+    CRATE_HEIGHTS
+)
+class Infeed: 
     def __init__(self, ID, article_code, article_description, crate_type, quantity):
         self.ID = ID
         self.article_code = article_code
@@ -6,7 +11,6 @@ class Infeed:
         self.crate_type = crate_type
         self.quantity = quantity
 
-import pandas as pd
 
 def infeed_source(file_path="Infeed-Excel"):
     """
@@ -23,10 +27,17 @@ def infeed_source(file_path="Infeed-Excel"):
 
     infeed_list = []
 
-    for _, row in df.iterrows():
+    for idx, row in df.iterrows():
         # Skip rows with missing article_code or quantity
         if pd.isna(row['article_code']) or pd.isna(row['IN-quantity']):
             continue
+
+        # Validate crate_type
+        crate_type = row["crate_type"]
+        if not validate_crate_type(crate_type):
+            print(f"ERROR: Invalid crate_type '{crate_type}' in row {idx+2}")
+            print(f"Please use one of: {list(CRATE_HEIGHTS)}")
+            raise ValueError(f"Invalid crate_type: {crate_type}")
 
         infeed_row = Infeed(
             ID=row.get("IN-ID", None),
@@ -38,3 +49,5 @@ def infeed_source(file_path="Infeed-Excel"):
         infeed_list.append(infeed_row)
 
     return infeed_list
+
+
