@@ -135,9 +135,9 @@ def log_infeed_iteration(
     else:
         row = {
             "Iteration": iteration,
-            "article_code": "NULL",
-            "crate_type": "NULL",
-            "IN-quantity": "NULL"
+            "article_code": "",
+            "crate_type": "",
+            "IN-quantity": ""
         }
 
     df_new = pd.DataFrame([row])
@@ -183,15 +183,15 @@ def log_outfeed_iteration(
     row = {
         "iteration": iteration,
         "pallet_built": int(pallet_built),
-        "shop": shop if pallet_built else "NULL",
-        "total_crates_pallet": "NULL",
+        "shop": shop if pallet_built else "",
+        "total_crates_pallet": "",
     }
 
     # Initialize stack-specific columns
     for i in range(1, 5):
-        row[f"stack_height_{i}"] = "NULL"
-        row[f"stack_family_{i}"] = "NULL"
-        row[f"crate_qty_{i}"] = "NULL"
+        row[f"stack_height_{i}"] = ""
+        row[f"stack_family_{i}"] = ""
+        row[f"crate_qty_{i}"] = ""
     
     # Fill data if pallet was built
     if pallet_built and len(stacks) == STACKS_PER_PALLET:
