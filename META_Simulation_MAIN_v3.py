@@ -13,7 +13,8 @@ from META_Simulation_INFEED_v1 import (
 )
 from META_Simulation_LOGGING_v1 import (
     kpi_storage_detail,
-    kpi_total_crates
+    kpi_total_crates,
+    log_infeed_iteration
 )
 from META_Simulation_OUTFEED_v3 import (
     try_outfeed,
@@ -41,6 +42,8 @@ def main():
     while True:
         print(f"\n=== ITERATION {iteration} ===")
 
+        current_infeed = None
+
         # 1️ Infeed exactly one pallet if available
         if infeed_index < total_infeeds:
             current_infeed = infeeds[infeed_index]
@@ -64,8 +67,13 @@ def main():
 #            f"Ordered: {order.original_quantity}, Remaining: {order.remaining_quantity}")
 #        print("=== End of orders check ===\n")
 
+        # 3 Log infeed activity (always one row per iteration)
+        log_infeed_iteration(
+            iteration=iteration,
+            infeed_obj=current_infeed
+        )
 
-        # 3️ Log current storage state
+        # 4 Log current storage state
         print("\nTotal crates in storage:", kpi_total_crates(storage))
         print("Detailed storage status:")
         for article_code, crate_types in kpi_storage_detail(storage).items():
@@ -74,7 +82,7 @@ def main():
 
         iteration += 1
 
-        # 4 Rule: stop if no infeed left AND no outfeed possible
+        # 5 Stop Condition: Rule = stop if no infeed left AND no outfeed possible
         if infeed_index >= total_infeeds and not success:
             print("\nSimulation finished: no more infeed and no outfeed possible")
             break
