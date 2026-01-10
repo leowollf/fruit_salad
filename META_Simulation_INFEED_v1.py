@@ -3,7 +3,7 @@ from META_Simulation_CONFIG_v1 import (
     validate_crate_type,
     CRATE_HEIGHTS
 )
-class Infeed:
+class Infeed: 
     def __init__(self, ID, article_code, article_description, crate_type, quantity):
         self.ID = ID
         self.article_code = article_code
@@ -49,3 +49,6 @@ def infeed_source(file_path="Infeed-Excel"):
         infeed_list.append(infeed_row)
 
     return infeed_list
+
+
+# current status of infeed logic
