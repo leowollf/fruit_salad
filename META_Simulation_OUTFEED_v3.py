@@ -265,9 +265,17 @@ def try_outfeed(storage, orders):
                 for article_code, crate_type, qty in stack:
                     print(f"    - {int(qty):>2}x {crate_type} - {article_code}")
         
-        return True
+        return {
+            "pallet_built": True,
+            "shop": shop,
+            "stacks": stacks
+        }
     
-    return False  # No pallet could be created
+    return {
+        "pallet_built": False,
+        "shop": None,
+        "stacks": None
+    }  # No pallet could be created
 
 ## NOTES
 #1 should shops be sequenced in function "try_outfeed"; currently randomly ordered
