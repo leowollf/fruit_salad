@@ -74,6 +74,36 @@ def get_crate_height(crate_type):
                         f"Available types: {list(CRATE_HEIGHTS.keys())}")
     return CRATE_HEIGHTS[crate_type]
 
+"""
+validates that all crate types are from the same family
+"""
+def validate_stack_family_compatibility(stack_contents):
+    if not stack_contents:
+        return True  # Empty stack is valid
+    
+    # Get family of first crate type
+    first_crate_type = stack_contents[0][1]
+    required_family = get_crate_family(first_crate_type)
+    
+    # Check all other crate types
+    for _, crate_type, _ in stack_contents:
+        if get_crate_family(crate_type) != required_family:
+            return False
+    
+    return True
+
+"""
+define stack family. if any crate type in the stack is not of the correct family, function raises error
+"""
+def get_stack_family(stack_contents):
+    if not stack_contents:
+        return None
+    
+    if not validate_stack_family_compatibility(stack_contents):
+        raise ValueError("Stack contains mixed crate families - invalid state!")
+    
+    first_crate_type = stack_contents[0][1]
+    return get_crate_family(first_crate_type)
 
 # ============================================================================
 # INFORMATION & DEBUGGING FUNCTIONS
